@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RecruitMatch Japan</title>
+<style>
+:root {
+  color-scheme: light;
+  --primary: #0f2540;
+  --accent: #2563eb;
+  --accent-light: #dbeafe;
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.header { background: var(--primary); color: white; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; height: 54px; flex-shrink: 0; }
+.logo { font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.logo-badge { background: var(--accent); border-radius: 5px; padding: 2px 7px; font-size: 10px; font-weight: 700; letter-spacing: 1px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.save-status { font-size: 11px; color: rgba(255,255,255,0.55); }
+.save-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.25); color: white; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
+.save-btn:hover { background: rgba(255,255,255,0.22); }
+
+.tabs { background: #0a1e35; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; padding: 0 12px; overflow-x: auto; }
+.tab { color: rgba(255,255,255,0.5); padding: 12px 16px; font-size: 13px; font-weight: 500; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; white-space: nowrap; user-select: none; }
+.tab:hover { color: rgba(255,255,255,0.85); }
+.tab.active { color: #fff; border-bottom-color: #60a5fa; }
+
+.main { padding: 18px; max-width: 1100px; margin: 0 auto; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* Stats cards */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 18px; }
+.stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+.stat-label { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 6px; }
+.stat-value { font-size: 30px; font-weight: 800; color: var(--text); line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+
+/* Two-col */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Card */
+.card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.card-head { font-weight: 700; font-size: 14px; margin-bottom: 14px; }
+
+/* Section header */
+.sec-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.sec-title { font-size: 17px; font-weight: 800; }
+.btn-row { display: flex; gap: 8px; }
+
+/* Buttons */
+.btn { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fecaca; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 6px; }
+
+/* Table */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 9px 12px; border-bottom: 2px solid var(--border); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); white-space: nowrap; }
+td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: #f8fafc; }
+
+/* Badges */
+.badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.badge-blue { background: #dbeafe; color: #1d4ed8; }
+.badge-green { background: #dcfce7; color: #15803d; }
+.badge-orange { background: #ffedd5; color: #c2410c; }
+.badge-gray { background: #f1f5f9; color: #64748b; }
+.badge-purple { background: #f3e8ff; color: #7c3aed; }
+.badge-red { background: #fee2e2; color: #b91c1c; }
+
+/* Tags */
+.tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.tag { display: inline-block; background: #eff6ff; color: #2563eb; border-radius: 4px; padding: 1px 7px; font-size: 11px; font-weight: 500; }
+.tag-green { background: #f0fdf4; color: #16a34a; }
+
+/* Modals */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; display: none; align-items: center; justify-content: center; padding: 16px; }
+.overlay.open { display: flex; }
+.modal { background: #fff; border-radius: 14px; width: 100%; max-width: 620px; max-height: 92vh; overflow-y: auto; box-shadow: 0 24px 64px rgba(0,0,0,0.22); }
+.modal-head { padding: 20px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.modal-title { font-size: 15px; font-weight: 700; }
+.modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text-muted); line-height: 1; padding: 0; }
+.modal-body { padding: 18px 22px; }
+.modal-foot { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 9px; }
+
+/* Forms */
+.fg { margin-bottom: 13px; }
+.fl { font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; display: block; }
+.fi, .fs, .fta { width: 100%; padding: 8px 11px; border: 1px solid var(--border); border-radius: 7px; font-size: 13px; color: var(--text); background: #fff; font-family: inherit; }
+.fi:focus, .fs:focus, .fta:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+.fta { resize: vertical; min-height: 80px; }
+.fhint { font-size: 11px; color: var(--text-light); margin-top: 3px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Loading */
+.loading { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 13px; }
+.spin { display: inline-block; width: 26px; height: 26px; border: 3px solid #e2e8f0; border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; margin-bottom: 10px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Empty state */
+.empty { text-align: center; padding: 50px 20px; color: var(--text-muted); }
+.empty-icon { font-size: 38px; margin-bottom: 10px; }
+.empty-h { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.empty-s { font-size: 13px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: #fff; padding: 11px 17px; border-radius: 8px; font-size: 13px; font-weight: 500; z-index: 300; transform: translateY(70px); opacity: 0; transition: all 0.28s; max-width: 300px; pointer-events: none; }
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { background: var(--success); }
+.toast.err { background: var(--danger); }
+
+/* Recent items */
+.ri { display: flex; align-items: center; gap: 11px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.ri:last-child { border-bottom: none; }
+.av { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+.av-blue { background: #dbeafe; color: #1d4ed8; }
+.av-green { background: #dcfce7; color: #16a34a; }
+.ri-name { font-weight: 600; font-size: 13px; }
+.ri-sub { font-size: 11.5px; color: var(--text-muted); }
+
+/* Match */
+.match-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 11px; transition: box-shadow 0.2s; }
+.match-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+.mc-gold { border-color: #fbbf24; background: #fefce8; }
+.mc-silver { border-color: #94a3b8; background: #f8fafc; }
+.mc-bronze { border-color: #d97706; background: #fffbeb; }
+.match-score { font-size: 26px; font-weight: 800; color: var(--accent); }
+.match-reason { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin-top: 8px; }
+
+/* Candidate preview */
+.cand-preview { background: var(--bg); border-radius: 8px; padding: 11px 13px; font-size: 13px; margin-top: 10px; line-height: 1.6; }
+
+@media (max-width: 620px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .two-col { grid-template-columns: 1fr; }
+  .grid2 { grid-template-columns: 1fr; }
+  .main { padding: 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">ð RecruitMatch <span class="logo-badge">JAPAN</span></div>
+  <div class="header-right">
+    <span class="save-status" id="saveStatus">Loadingâ¦</span>
+    <button class="save-btn" onclick="saveToDrive()">ð¾ Save to Drive</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">ð Dashboard</div>
+  <div class="tab" data-tab="candidates" onclick="switchTab('candidates')">ð¤ Candidates</div>
+  <div class="tab" data-tab="companies" onclick="switchTab('companies')">ð¢ Companies</div>
+  <div class="tab" data-tab="match" onclick="switchTab('match')">ð¤ AI Match</div>
+</div>
+
+<div class="main">
+
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Candidates</div>
+        <div class="stat-value" id="s-cands">0</div>
+        <div class="stat-sub">Total registered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Companies</div>
+        <div class="stat-value" id="s-comps">0</div>
+        <div class="stat-sub">Actively hiring</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" id="s-active">0</div>
+        <div class="stat-sub" style="color:var(--accent)">Seeking jobs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Placed</div>
+        <div class="stat-value" id="s-placed">0</div>
+        <div class="stat-sub" style="color:var(--success)">Successfully placed</div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-head">Recent Candidates</div>
+        <div id="rc"></div>
+      </div>
+      <div class="card">
+        <div class="card-head">Recent Companies</div>
+        <div id="rco"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANDIDATES -->
+  <div class="view" id="view-candidates">
+    <div class="sec-header">
+      <div class="sec-title">Candidates</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="openCVModal()">ð Import CV</button>
+        <button class="btn btn-primary" onclick="openCandModal()">ï¼ Add Candidate</button>
+      </div>
+    </div>
+    <div class="card">
+      <div id="cand-table"><div class="loading"><div class="spin"></div><br>Loadingâ¦</div></div>
+    </div>
+  </div>
+
+  <!-- COMPANIES -->
+  <div class="view" id="view-companies">
+    <div class="sec-header">
+      <div class="sec-title">Companies</div>
+      <button class="btn btn-primary" onclick="openCompModal()">ï¼ Add Company</button>
+    </div>
+    <div class="card">
+      <div id="comp-table"><div class="loading"><div class="spin"></div><br>Loadingâ¦</div></div>
+    </div>
+  </div>
+
+  <!-- AI MATCH -->
+  <div class="view" id="view-match">
+    <div class="sec-header">
+      <div class="sec-title">AI Matching</div>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div class="fg">
+        <label class="fl">Select Candidate to Match</label>
+        <select class="fs" id="match-sel" onchange="previewCand()">
+          <option value="">-- Choose a candidate --</option>
+        </select>
+      </div>
+      <div id="match-preview"></div>
+      <div style="margin-top:12px">
+        <button class="btn btn-primary" id="match-btn" onclick="runMatch()">ð¤ Find Best Companies</button>
+      </div>
+    </div>
+    <div id="match-out"></div>
+  </div>
+
+</div>
+
+<!-- MODAL: Candidate -->
+<div class="overlay" id="m-cand">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="m-cand-title">Add Candidate</div>
+      <button class="modal-close" onclick="close('m-cand')">Ã</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="c-idx">
+      <div class="grid2">
+        <div class="fg"><label class="fl">Full Name *</label><input class="fi" id="c-name" placeholder="Tanaka Hiroshi"></div>
+        <div class="fg"><label class="fl">Email</label><input class="fi" id="c-email" type="email" placeholder="tanaka@email.com"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Phone</label><input class="fi" id="c-phone" placeholder="+81 90-0000-0000"></div>
+        <div class="fg"><label class="fl">Nationality</label><input class="fi" id="c-nat" placeholder="Japanese"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Current Location</label><input class="fi" id="c-loc" placeholder="Tokyo, Japan"></div>
+        <div class="fg"><label class="fl">Target Market</label>
+          <select class="fs" id="c-target">
+            <option value="Japan">Japan (Local)</option>
+            <option value="Overseas">Overseas</option>
+            <option value="Both" selected>Both</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Japanese Level</label>
+          <select class="fs" id="c-jp">
+            <option>Native</option><option>N1</option><option selected>N2</option><option>N3</option><option>Basic</option><option>None</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">English Level</label>
+          <select class="fs" id="c-en">
+            <option>Native</option><option selected>Business</option><option>Conversational</option><option>Basic</option><option>None</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Industry</label><input class="fi" id="c-ind" placeholder="IT, Finance, Salesâ¦"></div>
+        <div class="fg"><label class="fl">Years Experience</label><input class="fi" id="c-exp" type="number" min="0" placeholder="5"></div>
+      </div>
+      <div class="fg"><label class="fl">Skills (comma-separated)</label><input class="fi" id="c-skills" placeholder="React, Python, Sales, Project Mgmtâ¦"></div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Desired Role</label><input class="fi" id="c-role" placeholder="Senior Engineer"></div>
+        <div class="fg"><label class="fl">Employment Type</label>
+          <select class="fs" id="c-etype">
+            <option>Full-time</option><option>Part-time</option><option>Contract</option><option>Any</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Status</label>
+        <select class="fs" id="c-status">
+          <option value="Active">Active â Looking</option>
+          <option value="Interviewing">Interviewing</option>
+          <option value="Placed">Placed</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">CV Summary / Notes</label><textarea class="fta" id="c-cv" rows="4" placeholder="Key background, experience highlights, notesâ¦"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="close('m-cand')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCand()">Save Candidate</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CV Import -->
+<div class="overlay" id="m-cv">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">ð Import CV with AI</div>
+      <button class="modal-close" onclick="close('m-cv')">Ã</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">Paste a CV and AI will auto-extract the candidate's information into the form.</p>
+      <div class="fg"><label class="fl">Paste CV Text</label><textarea class="fta" id="cv-raw" rows="12" placeholder="Paste the full CV / resume text hereâ¦"></textarea></div>
+      <div id="cv-status"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="close('m-cv')">Cancel</button>
+      <button class="btn btn-primary" onclick="extractCV()">ð¤ Extract & Fill Form</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Company -->
+<div class="overlay" id="m-comp">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title" id="m-comp-title">Add Company</div>
+      <button class="modal-close" onclick="close('m-comp')">Ã</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="p-idx">
+      <div class="grid2">
+        <div class="fg"><label class="fl">Company Name *</label><input class="fi" id="p-name" placeholder="Toyota, Rakutenâ¦"></div>
+        <div class="fg"><label class="fl">Industry</label><input class="fi" id="p-ind" placeholder="Technology, Financeâ¦"></div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Location</label><input class="fi" id="p-loc" placeholder="Tokyo, Japan"></div>
+        <div class="fg"><label class="fl">Market</label>
+          <select class="fs" id="p-market">
+            <option value="Japan">Japan (Local)</option>
+            <option value="Overseas">Overseas / Remote</option>
+            <option value="Both">Both</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Open Positions</label><input class="fi" id="p-pos" placeholder="Software Engineer, Sales Manager, Marketing Leadâ¦"><div class="fhint">Comma-separated list of roles currently hiring</div></div>
+      <div class="fg"><label class="fl">Required Skills</label><input class="fi" id="p-skills" placeholder="JavaScript, Salesforce, N2 Japaneseâ¦"></div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Japanese Required</label>
+          <select class="fs" id="p-jp">
+            <option value="None">Not required</option><option value="Basic">Basic</option><option value="Business">Business</option><option value="Native">Native</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">English Required</label>
+          <select class="fs" id="p-en">
+            <option value="None">Not required</option><option value="Basic">Basic</option><option value="Business">Business</option><option value="Native">Native</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="fg"><label class="fl">Employment Type</label>
+          <select class="fs" id="p-etype">
+            <option>Full-time</option><option>Part-time</option><option>Contract</option><option>Any</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Salary Range</label><input class="fi" id="p-sal" placeholder="Â¥4MâÂ¥8M / year"></div>
+      </div>
+      <div class="fg"><label class="fl">Notes / Culture</label><textarea class="fta" id="p-notes" rows="3" placeholder="Company culture, perks, special requirementsâ¦"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="close('m-comp')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveComp()">Save Company</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ââ State âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+let db = { candidates: [], companies: [] };
+let curTab = 'dashboard';
+
+// ââ Utilities âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+const $ = id => document.getElementById(id);
+const v = id => $(id).value;
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function toast(msg, type='') {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(() => t.className = 'toast', 3400);
+}
+
+function open(id) { $(id).classList.add('open'); }
+function close(id) { $(id).classList.remove('open'); }
+document.querySelectorAll('.overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+function setVal(id, val) {
+  const el = $(id); if (!el) return;
+  el.value = val;
+  if (el.tagName === 'SELECT') {
+    for (let i=0; i<el.options.length; i++) {
+      if (el.options[i].value===val||el.options[i].text===val) { el.selectedIndex=i; break; }
+    }
+  }
+}
+
+function statusBadge(s) {
+  return ({Active:'badge-blue',Interviewing:'badge-orange',Placed:'badge-green',Inactive:'badge-gray'})[s]||'badge-gray';
+}
+
+// ââ Tab switching âââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab===tab));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $('view-'+tab).classList.add('active');
+  curTab = tab;
+  if (tab==='dashboard') renderDash();
+  if (tab==='candidates') renderCands();
+  if (tab==='companies') renderComps();
+  if (tab==='match') fillMatchSel();
+}
+
+// ââ Drive âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+async function loadFromDrive() {
+  $('saveStatus').textContent = 'Loadingâ¦';
+  try {
+    const r = await window.cowork.callMcpTool(
+      'mcp__3c238841-6ec2-4b23-9594-505ff03f033e__search_files',
+      { query: "title = 'RecruitMatch_Data.json'", pageSize: 5 }
+    );
+    const raw = r.content?.[0]?.text || JSON.stringify(r.structuredContent||{});
+    const m = raw.match(/"id"\s*:\s*"([^"]+)"/);
+    if (!m) { $('saveStatus').textContent = 'No data yet'; renderAll(); return; }
+    const fileId = m[1];
+    const dl = await window.cowork.callMcpTool(
+      'mcp__3c238841-6ec2-4b23-9594-505ff03f033e__download_file_content',
+      { fileId }
+    );
+    const b64 = dl.content?.[0]?.text || '';
+    let parsed;
+    try { parsed = JSON.parse(atob(b64.trim())); }
+    catch(e) { parsed = JSON.parse(b64); }
+    db.candidates = parsed.candidates||[];
+    db.companies  = parsed.companies||[];
+    $('saveStatus').textContent = `Loaded â (${db.candidates.length} cands, ${db.companies.length} cos)`;
+  } catch(e) {
+    $('saveStatus').textContent = 'Ready (new)';
+  }
+  renderAll();
+}
+
+async function saveToDrive() {
+  $('saveStatus').textContent = 'Savingâ¦';
+  const payload = JSON.stringify({ candidates: db.candidates, companies: db.companies, savedAt: new Date().toISOString() }, null, 2);
+  try {
+    await window.cowork.callMcpTool(
+      'mcp__3c238841-6ec2-4b23-9594-505ff03f033e__create_file',
+      { title: 'RecruitMatch_Data.json', textContent: payload, contentMimeType: 'text/plain', disableConversionToGoogleType: true }
+    );
+    $('saveStatus').textContent = 'Saved â';
+    toast('Saved to Google Drive â', 'ok');
+  } catch(e) {
+    $('saveStatus').textContent = 'Save failed';
+    toast('Save failed', 'err');
+  }
+}
+
+// ââ Render ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function renderAll() {
+  renderDash();
+  if (curTab==='candidates') renderCands();
+  if (curTab==='companies') renderComps();
+}
+
+function renderDash() {
+  $('s-cands').textContent = db.candidates.length;
+  $('s-comps').textContent = db.companies.length;
+  $('s-active').textContent = db.candidates.filter(c=>c.status==='Active').length;
+  $('s-placed').textContent = db.candidates.filter(c=>c.status==='Placed').length;
+
+  const r5 = [...db.candidates].reverse().slice(0,6);
+  $('rc').innerHTML = r5.length ? r5.map(c=>`
+    <div class="ri">
+      <div class="av av-blue">${(c.name||'?').charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ri-name">${esc(c.name)}</div>
+        <div class="ri-sub">${esc(c.industry||c.role||'â')} Â· ${esc(c.target||'â')}</div>
+      </div>
+      <span class="badge ${statusBadge(c.status)}">${esc(c.status||'Active')}</span>
+    </div>`).join('')
+  : '<div style="padding:16px;color:var(--text-light);font-size:13px;text-align:center">No candidates yet</div>';
+
+  const rc5 = [...db.companies].reverse().slice(0,6);
+  $('rco').innerHTML = rc5.length ? rc5.map(c=>`
+    <div class="ri">
+      <div class="av av-green">${(c.name||'?').charAt(0).toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div class="ri-name">${esc(c.name)}</div>
+        <div class="ri-sub">${esc(c.location||'â')} Â· ${esc(c.market||'â')}</div>
+      </div>
+    </div>`).join('')
+  : '<div style="padding:16px;color:var(--text-light);font-size:13px;text-align:center">No companies yet</div>';
+}
+
+function renderCands() {
+  const el = $('cand-table');
+  if (!db.candidates.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">ð¤</div><div class="empty-h">No candidates yet</div><div class="empty-s">Add candidates manually or import a CV using AI.</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Name</th><th>Industry / Role</th><th>Skills</th><th>Languages</th><th>Target</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>${db.candidates.map((c,i)=>`
+      <tr>
+        <td><b>${esc(c.name)}</b>${c.email?`<br><span style="color:var(--text-muted);font-size:11.5px">${esc(c.email)}</span>`:''}</td>
+        <td>${esc(c.industry||'â')}${c.role?`<br><span style="color:var(--text-muted);font-size:11.5px">${esc(c.role)}</span>`:''}</td>
+        <td><div class="tags">${skillTags(c.skills,3)}</div></td>
+        <td>
+          <span class="badge badge-blue" style="margin-right:2px">JP: ${esc(c.jp||c.japanese||'?')}</span>
+          <span class="badge badge-purple">EN: ${esc(c.en||c.english||'?')}</span>
+        </td>
+        <td>${esc(c.target||'â')}</td>
+        <td><span class="badge ${statusBadge(c.status)}">${esc(c.status||'Active')}</span></td>
+        <td><div style="display:flex;gap:5px">
+          <button class="btn btn-secondary btn-sm" onclick="editCand(${i})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="delCand(${i})">â</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function renderComps() {
+  const el = $('comp-table');
+  if (!db.companies.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">ð¢</div><div class="empty-h">No companies yet</div><div class="empty-s">Add companies that are looking to hire in Japan or overseas.</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="tbl-wrap"><table>
+    <thead><tr><th>Company</th><th>Industry</th><th>Open Roles</th><th>Location</th><th>Lang Req</th><th>Type</th><th>Actions</th></tr></thead>
+    <tbody>${db.companies.map((c,i)=>`
+      <tr>
+        <td><b>${esc(c.name)}</b>${c.salary?`<br><span style="color:var(--warning);font-size:11.5px">ð´ ${esc(c.salary)}</span>`:''}</td>
+        <td>${esc(c.industry||'â')}</td>
+        <td><div class="tags">${(c.positions||c.pos||'').split(',').filter(p=>p.trim()).slice(0,2).map(p=>`<span class="tag tag-green">${esc(p.trim())}</span>`).join('')}</div></td>
+        <td>${esc(c.location||'â')}<br><span style="font-size:11px;color:var(--text-muted)">${esc(c.market||'')}</span></td>
+        <td><span style="font-size:12px">JP: ${esc(c.japanese||c.jp||'â')} / EN: ${esc(c.english||c.en||'â')}</span></td>
+        <td>${esc(c.emptype||c.etype||'â')}</td>
+        <td><div style="display:flex;gap:5px">
+          <button class="btn btn-secondary btn-sm" onclick="editComp(${i})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="delComp(${i})">â</button>
+        </div></td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+
+function skillTags(skills, max) {
+  const arr = (skills||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const shown = arr.slice(0,max).map(s=>`<span class="tag">${esc(s)}</span>`).join('');
+  const more = arr.length > max ? `<span class="tag" style="background:#f1f5f9;color:var(--text-muted)">+${arr.length-max}</span>` : '';
+  return shown + more;
+}
+
+// ââ Candidate CRUD ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function openCandModal(idx) {
+  $('m-cand-title').textContent = idx==null ? 'Add Candidate' : 'Edit Candidate';
+  $('c-idx').value = idx==null ? '' : idx;
+  const c = idx!=null ? db.candidates[idx] : {};
+  setVal('c-name', c.name||'');
+  setVal('c-email', c.email||'');
+  setVal('c-phone', c.phone||'');
+  setVal('c-nat', c.nationality||c.nat||'');
+  setVal('c-loc', c.location||c.loc||'');
+  setVal('c-target', c.target||'Both');
+  setVal('c-jp', c.japanese||c.jp||'N2');
+  setVal('c-en', c.english||c.en||'Business');
+  setVal('c-ind', c.industry||c.ind||'');
+  setVal('c-exp', c.exp||'');
+  setVal('c-skills', c.skills||'');
+  setVal('c-role', c.role||'');
+  setVal('c-etype', c.emptype||c.etype||'Full-time');
+  setVal('c-status', c.status||'Active');
+  setVal('c-cv', c.cv||'');
+  open('m-cand');
+}
+
+function editCand(i) { openCandModal(i); }
+
+function saveCand() {
+  const name = v('c-name').trim();
+  if (!name) { toast('Name is required','err'); return; }
+  const obj = {
+    name, email:v('c-email'), phone:v('c-phone'), nationality:v('c-nat'), location:v('c-loc'),
+    target:v('c-target'), japanese:v('c-jp'), english:v('c-en'),
+    industry:v('c-ind'), exp:v('c-exp'), skills:v('c-skills'),
+    role:v('c-role'), emptype:v('c-etype'), status:v('c-status'),
+    cv:v('c-cv'), addedAt:new Date().toISOString()
+  };
+  const idx = $('c-idx').value;
+  if (idx!=='') db.candidates[+idx]=obj; else db.candidates.push(obj);
+  close('m-cand');
+  renderAll();
+  toast('Candidate saved â','ok');
+}
+
+function delCand(i) {
+  if (!confirm('Delete this candidate?')) return;
+  db.candidates.splice(i,1);
+  renderAll();
+  toast('Candidate deleted');
+}
+
+// ââ Company CRUD ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function openCompModal(idx) {
+  $('m-comp-title').textContent = idx==null ? 'Add Company' : 'Edit Company';
+  $('p-idx').value = idx==null ? '' : idx;
+  const c = idx!=null ? db.companies[idx] : {};
+  setVal('p-name', c.name||'');
+  setVal('p-ind', c.industry||c.ind||'');
+  setVal('p-loc', c.location||c.loc||'');
+  setVal('p-market', c.market||'Japan');
+  setVal('p-pos', c.positions||c.pos||'');
+  setVal('p-skills', c.skills||'');
+  setVal('p-jp', c.japanese||c.jp||'Business');
+  setVal('p-en', c.english||c.en||'None');
+  setVal('p-etype', c.emptype||c.etype||'Full-time');
+  setVal('p-sal', c.salary||c.sal||'');
+  setVal('p-notes', c.notes||'');
+  open('m-comp');
+}
+
+function editComp(i) { openCompModal(i); }
+
+function saveComp() {
+  const name = v('p-name').trim();
+  if (!name) { toast('Company name is required','err'); return; }
+  const obj = {
+    name, industry:v('p-ind'), location:v('p-loc'), market:v('p-market'),
+    positions:v('p-pos'), skills:v('p-skills'), japanese:v('p-jp'),
+    english:v('p-en'), emptype:v('p-etype'), salary:v('p-sal'),
+    notes:v('p-notes'), addedAt:new Date().toISOString()
+  };
+  const idx = $('p-idx').value;
+  if (idx!=='') db.companies[+idx]=obj; else db.companies.push(obj);
+  close('m-comp');
+  renderAll();
+  toast('Company saved â','ok');
+}
+
+function delComp(i) {
+  if (!confirm('Delete this company?')) return;
+  db.companies.splice(i,1);
+  renderAll();
+  toast('Company deleted');
+}
+
+// ââ CV Import âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function openCVModal() {
+  $('cv-raw').value='';
+  $('cv-status').innerHTML='';
+  open('m-cv');
+}
+
+async function extractCV() {
+  const txt = $('cv-raw').value.trim();
+  if (!txt) { toast('Paste a CV first','err'); return; }
+  $('cv-status').innerHTML = '<div class="loading"><div class="spin"></div><br>Analyzing with AIâ¦</div>';
+  const prompt = `Extract structured data from this CV. Return ONLY a JSON object with these exact keys (empty string if not found):
+name, email, phone, nationality, location, jp (one of: Native/N1/N2/N3/Basic/None), en (one of: Native/Business/Conversational/Basic/None), industry, exp (years as integer), skills (comma-separated), role (desired or most recent role), cv (2-3 sentence professional summary).
+
+CV:
+${txt}
+
+Return valid JSON only, no markdown, no explanation.`;
+  try {
+    const result = await window.cowork.askClaude(prompt, []);
+    const m = result.match(/\{[\s\S]*\}/);
+    const ext = JSON.parse(m ? m[0] : result.trim());
+    close('m-cv');
+    openCandModal();
+    // pre-fill
+    ['name','email','phone'].forEach(k => { if(ext[k]) setVal('c-'+k, ext[k]); });
+    if(ext.nationality) setVal('c-nat', ext.nationality);
+    if(ext.location) setVal('c-loc', ext.location);
+    if(ext.jp) setVal('c-jp', ext.jp);
+    if(ext.en) setVal('c-en', ext.en);
+    if(ext.industry) setVal('c-ind', ext.industry);
+    if(ext.exp) setVal('c-exp', ext.exp);
+    if(ext.skills) setVal('c-skills', ext.skills);
+    if(ext.role) setVal('c-role', ext.role);
+    if(ext.cv) setVal('c-cv', ext.cv);
+    toast('CV extracted â review & save â','ok');
+  } catch(e) {
+    $('cv-status').innerHTML = `<p style="color:var(--danger);font-size:13px;padding:6px">Could not extract: ${esc(e.message)}. Fill in manually.</p>`;
+  }
+}
+
+// ââ AI Match ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+function fillMatchSel() {
+  const sel = $('match-sel');
+  sel.innerHTML = '<option value="">-- Choose a candidate --</option>';
+  db.candidates.forEach((c,i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = `${c.name}${c.role ? ' â ' + c.role : ''}`;
+    sel.appendChild(o);
+  });
+}
+
+function previewCand() {
+  const i = $('match-sel').value;
+  const prev = $('match-preview');
+  if (i==='') { prev.innerHTML=''; return; }
+  const c = db.candidates[i];
+  prev.innerHTML = `<div class="cand-preview">
+    <b>${esc(c.name)}</b>${c.role ? ' Â· ' + esc(c.role) : ''} Â· ${esc(c.exp||'?')} yrs exp<br>
+    <span style="color:var(--text-muted)">Skills: ${esc(c.skills||'â')}</span><br>
+    <span style="color:var(--text-muted)">JP: ${esc(c.japanese||'â')} Â· EN: ${esc(c.english||'â')} Â· Target: ${esc(c.target||'â')}</span>
+    ${c.cv?`<br><span style="color:var(--text-muted)">${esc(c.cv.slice(0,120))}${c.cv.length>120?'â¦':''}</span>`:''}
+  </div>`;
+}
+
+async function runMatch() {
+  const i = $('match-sel').value;
+  if (i==='') { toast('Select a candidate first','err'); return; }
+  if (!db.companies.length) { toast('No companies added yet','err'); return; }
+  const cand = db.candidates[i];
+  const btn = $('match-btn');
+  btn.disabled = true; btn.textContent = 'â³ Matchingâ¦';
+  $('match-out').innerHTML = '<div class="loading"><div class="spin"></div><br>AI is analyzing match qualityâ¦</div>';
+
+  const coList = db.companies.map((c,idx) =>
+    `[${idx}] ${c.name} | ${c.industry} | ${c.location} (${c.market}) | Roles: ${c.positions} | Skills: ${c.skills} | JP: ${c.japanese} | EN: ${c.english} | Type: ${c.emptype}${c.salary?' | Salary: '+c.salary:''}`
+  ).join('\n');
+
+  const prompt = `You are a senior recruiter specializing in Japan and international job placement. Analyze this candidate against all companies and rank them from best to worst fit.
+
+CANDIDATE:
+Name: ${cand.name}
+Role: ${cand.role||'Not specified'}
+Industry: ${cand.industry||'Not specified'}
+Skills: ${cand.skills||'Not specified'}
+Experience: ${cand.exp||'?'} years
+Japanese: ${cand.japanese}
+English: ${cand.english}
+Target market: ${cand.target}
+Employment type: ${cand.emptype||'Any'}
+Background: ${cand.cv||'No additional info'}
+
+COMPANIES (format: [index] Name | Industry | Location | Roles | Skills needed | JP req | EN req | Type):
+${coList}
+
+Return a JSON array sorted best to worst. Include ALL ${db.companies.length} companies:
+[{"index":0,"score":85,"fit":"Good","reason":"2-3 sentences specific to this candidate and company"}]
+
+Only return valid JSON. No markdown.`;
+
+  try {
+    const res = await window.cowork.askClaude(prompt, []);
+    const m = res.match(/\[[\s\S]*\]/);
+    const matches = JSON.parse(m ? m[0] : res.trim());
+    $('match-out').innerHTML = matches.map((mt, rank) => {
+      const co = db.companies[mt.index];
+      if (!co) return '';
+      const cls = rank===0?'mc-gold':rank===1?'mc-silver':rank===2?'mc-bronze':'';
+      const medal = rank===0?'ð¥':rank===1?'ð¥':rank===2?'ð¥':`<b>#${rank+1}</b>`;
+      const fitColor = mt.fit==='Good'?'var(--success)':mt.fit==='Fair'?'var(--warning)':'var(--danger)';
+      return `<div class="match-card ${cls}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+          <div>
+            <div style="font-size:15px;margin-bottom:2px">${medal} <b>${esc(co.name)}</b></div>
+            <div style="font-size:12px;color:var(--text-muted)">${esc(co.location)} Â· ${esc(co.market)} Â· ${esc(co.industry)}</div>
+            <div class="tags" style="margin-top:6px">${(co.positions||'').split(',').filter(p=>p.trim()).map(p=>`<span class="tag tag-green">${esc(p.trim())}</span>`).join('')}${co.salary?`<span class="tag" style="background:#fffbeb;color:var(--warning)">ð´ ${esc(co.salary)}</span>`:''}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div class="match-score">${mt.score}</div>
+            <div style="font-size:11px;font-weight:700;color:${fitColor};margin-top:1px">${mt.fit}</div>
+          </div>
+        </div>
+        <div class="match-reason">${esc(mt.reason)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    $('match-out').innerHTML = `<div class="empty"><div class="empty-h">Match error</div><div class="empty-s">${esc(e.message)}</div></div>`;
+  }
+  btn.disabled = false; btn.textContent = 'ð¤ Find Best Companies';
+}
+
+// ââ Init âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+loadFromDrive();
+</script>
+</body>
+</html>
